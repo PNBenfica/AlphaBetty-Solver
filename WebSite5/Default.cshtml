@@ -1,0 +1,104 @@
+﻿@{
+    Page.Title = "AlphaBetty Saga Solver";
+}
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>@Page.Title</title>
+    <link rel="stylesheet" type="text/css" href="~/Styles/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="~/Styles/styles.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="pull-left"><img src="~/Images/logo.png"></a>
+            <a class="navbar-brand" href="#">AlphaBetty Saga Solver</a>
+        </div>
+      </div>
+    </nav>
+
+    <br><br><br><br>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel-group" id="collapse">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title"></h4>
+                        </div>
+                        <div class="panel-body game-board">
+                        </div>
+                        <div class="panel-footer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-3 col-md-offset-1">
+                <button type="button" class="btn btn-default col-md-12">Solve</button>
+
+                @{ 
+                    List<String> list = new List<string>();
+                    list.Add("Caralho");
+                }
+
+                <!-- Inline expressions -->
+                <p>@list[0] </p>
+            </div>
+
+
+            <br><br><br><br><br>
+            <div class="col-md-3 col-md-offset-1">
+                <div class="panel-group" id="collapse">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title" style="color:white; text-align:center;">Words</h4>
+                        </div>
+                        <div class="panel-body">
+                            <tr>
+                                <p>Olapa</p>
+                                <p>Pau</p>
+                                <p>Dia</p>
+                            </tr>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="~/Scripts/jquery.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+        $( document ).ready(function() {
+
+            createMatrix(7,8);
+
+            function createMatrix (x, y) {
+                for (var i = 0; i < x; i++) {
+                    for (var j = 0; j < y; j++) {
+                        var squareSize = $(".panel-heading").width() / x - 10;
+                        var squareCss = "style=\"width:" + squareSize + "px;height:" + squareSize + "px\"";
+                        var squareId = i+" "+j;
+                        var newSquare = "<div id=" + squareId + " class=\"square\"" + squareCss + "><h4>A</h4></div>";
+                        $(".game-board").append(newSquare);
+
+                        squareId = "#" + squareId;
+                    };
+                };
+            }
+
+            $(".square").dblclick(function(){
+                this.getElementsByTagName("h4")[0].innerHTML = "-";
+                $(this).css('color', 'transparent'); //getElementsByTagName("h4")[0].innerHTML
+            });
+        });
+    </script>
+</body>
+</html>
