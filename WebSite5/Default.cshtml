@@ -39,15 +39,11 @@
 
 
             <div class="col-md-3 col-md-offset-1">
-                <button type="button" class="btn btn-default col-md-12">Solve</button>
-
-                @{ 
-                    List<String> list = new List<string>();
-                    list.Add("Caralho");
-                }
-
-                <!-- Inline expressions -->
-                <p>@list[0] </p>
+                <button id="solve" type="button" class="btn btn-default col-md-12">Solve</button>
+            </div>
+            
+            <div class="col-md-3 col-md-offset-1">
+                <button id="results" type="button" class="btn btn-default col-md-12">Show Results</button>
             </div>
 
 
@@ -56,14 +52,9 @@
                 <div class="panel-group" id="collapse">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <h4 class="panel-title" style="color:white; text-align:center;">Words</h4>
+                            <h4 class="panel-title" style="color:white; text-align:center;">Found Words</h4>
                         </div>
-                        <div class="panel-body">
-                            <tr>
-                                <p>Olapa</p>
-                                <p>Pau</p>
-                                <p>Dia</p>
-                            </tr>
+                        <div class="panel-body" id="word-found-list">
                         </div>
                     </div>
                 </div>
@@ -74,30 +65,193 @@
 
     <script src="~/Scripts/jquery.js"></script>
     <script src="~/Scripts/bootstrap.min.js"></script>
+    @{ 
+        AlphaBettySolver alphaBettySolver = new AlphaBettySolver();
+        int LINES = 8;
+        int COLUMNS = 7;
+    }
 
     <script type="text/javascript">
-        $( document ).ready(function() {
 
-            createMatrix(7,8);
 
-            function createMatrix (x, y) {
-                for (var i = 0; i < x; i++) {
-                    for (var j = 0; j < y; j++) {
-                        var squareSize = $(".panel-heading").width() / x - 10;
-                        var squareCss = "style=\"width:" + squareSize + "px;height:" + squareSize + "px\"";
-                        var squareId = i+" "+j;
-                        var newSquare = "<div id=" + squareId + " class=\"square\"" + squareCss + "><h4>A</h4></div>";
+        $(document).ready(function () {
+
+            function readFileInIE(filePath) {
+                try {
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var file = fso.OpenTextFile(filePath, 1);
+                    var fileContent = file.ReadAll();
+                    file.Close();
+                    return fileContent;
+                } catch (e) {
+                    if (e.number == -2146827859) {
+                        alert('Unable to access local files due to browser security settings. ' +
+                        'To overcome this, go to Tools->Internet Options->Security->Custom Level. ' +
+                        'Find the setting for "Initialize and script ActiveX controls not marked as safe" and change it to "Enable" or "Prompt"');
+                    }
+                }
+            }
+
+
+            function writeFileInIE(filePath, fileContent) {
+                try {
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var file = fso.OpenTextFile(filePath, 2, true);
+                    file.WriteLine(fileContent);
+                    file.Close();
+                } catch (e) {
+                    if (e.number == -2146827859) {
+                        alert('Unable to access local files due to browser security settings. ' +
+                        'To overcome this, go to Tools->Internet Options->Security->Custom Level. ' +
+                        'Find the setting for "Initialize and script ActiveX controls not marked as safe" and change it to "Enable" or "Prompt"');
+                    }
+                }
+            }
+
+            var LINES = 8;
+            var COLUMNS = 7;
+
+            var board = [["A", "A", "-", "A", "A", "-", "A"],
+                        ["A", "A", "-", "A", "A", "-", "A"],
+                        ["A", "A", "-", "A", "A", "-", "A"],
+                        ["A", "A", "-", "A", "A", "-", "A"],
+                        ["A", "A", "-", "A", "A", "-", "A"],
+                        ["A", "A", "-", "A", "A", "-", "A"],
+                        ["A", "A", "-", "A", "A", "-", "A"],
+                        ["A", "A", "-", "A", "A", "-", "A"]];
+
+            var emptySquares = [];
+
+            for (var i = 0; i < LINES; i++){
+                for (var j = 0; j < COLUMNS; j++) {
+                    if (board[i][j] === "-")
+                        emptySquares.push("" + i + " " + j);
+                }
+            }
+
+            createMatrix(LINES,COLUMNS);
+
+            function createMatrix (lines, columns) {
+                for (var i = 0; i < lines; i++) {
+                    for (var j = 0; j < columns; j++) {
+                        var squareSize = $(".panel-heading").width() / columns - 0;
+                        var squareSize2 = squareSize * 0.8;
+                        var squareCss = "style=\"width:" + squareSize + "px;height:" + squareSize2 + "px\"";
+                        var squareId = "" + i+" "+j;
+                        var newSquare = "<div id=\"" + squareId + "\" class=\"square\"" + squareCss + "><h4>A</h4></div>";
                         $(".game-board").append(newSquare);
 
-                        squareId = "#" + squareId;
+                        if ($.inArray(squareId, emptySquares) != -1){
+                            clearSquare(i,j);
+                        }
                     };
                 };
             }
 
+            function clearSquare(x,y){
+                var squareId = "" + x + " " + y;
+                document.getElementById(squareId).getElementsByTagName("h4")[0].innerHTML = "-";
+                board[x][y] = "-";
+                $(document.getElementById(squareId)).css('color', 'transparent'); //getElementsByTagName("h4")[0].innerHTML
+                $(document.getElementById(squareId)).css('background-color', '#D6D6D6');
+                if ($.inArray(squareId, emptySquares) == -1){
+                    emptySquares.push(squareId);
+                }
+            }
+
+            function highLightSquares(squaresIds) {
+                for (var i = 0; i < squaresIds.length; i++) {
+                    var square = document.getElementById(squaresIds[i]);
+                    $(square).css('background-color', '#F28A52');
+                }
+            }
+
+            function clearHighLightSquares() {
+                for (var i = 0; i < LINES; i++) {
+                    for (var j = 0; j < COLUMNS; j++) {
+                        var squareId = "" + i + " " + j;
+
+                        if (board[i][j] !== "-") {
+                            $(document.getElementById(squareId)).css('background-color', '#F0E3DA');
+                        }
+                    }
+                }
+            }
+
+
             $(".square").dblclick(function(){
-                this.getElementsByTagName("h4")[0].innerHTML = "-";
-                $(this).css('color', 'transparent'); //getElementsByTagName("h4")[0].innerHTML
+                var squareId = $(this).attr('id');
+                var line = squareId[0];
+                var column = squareId[2];
+                if (activeSquare != null)
+                    $(activeSquare).css('border-color', '#F5F5F5');
+                clearSquare(line, column);
             });
+
+            var activeSquare = null;
+            $(".square").click(function(){
+                if (activeSquare != null){
+                    $(activeSquare).css('border-color', '#F5F5F5');
+                }
+                var squareId = $(this).attr('id');
+                var square = document.getElementById(squareId);
+                $(square).css('border-color', '#FFA973');
+                activeSquare = square;
+            });
+
+            $('body').keypress(function(e){
+                var keyPressed = String.fromCharCode( e.which ).toUpperCase();
+                if (keyPressed.length === 1 && keyPressed.match(/[a-z]/i) && activeSquare != null){
+                    if (keyPressed === "Q")
+                        keyPressed = "QU";
+                    activeSquare.getElementsByTagName("h4")[0].innerHTML = keyPressed;
+
+                    var squareId = $(activeSquare).attr('id');
+                    var line = squareId[0];
+                    var column = squareId[2];
+                    board[line][column] = keyPressed;
+
+                    $(activeSquare).css('color', 'black');
+                    $(activeSquare).css('background-color', '#F0E3DA');
+                    $(activeSquare).css('border-color', '#F5F5F5');
+                    activeSquare = null;
+                }
+            });
+
+            $("#solve").click(function () {
+
+                var strBoard = " ";
+                for (var i = 0; i < LINES; i++) {
+                    for (var j = 0; j < COLUMNS; j++) {
+                        strBoard += board[i][j] + " ";
+                    }
+                    strBoard += "| ";
+                }
+                writeFileInIE("C:\Users\paulo\Desktop\hello.txt", strBoard);
+                clearHighLightSquares();
+            });
+
+            $("#results").click(function () {
+                var results = readFileInIE("C:\Users\paulo\Desktop\solved.txt");
+                results = results.split(";");
+
+                var foundWords = results[0];
+                foundWords = foundWords.split(" ");
+                fillFoundWordsTable(foundWords);
+
+                var foundWordsSquares = results[1];
+                foundWordsSquares = foundWordsSquares.split("|");
+                highLightSquares(foundWordsSquares);
+            });
+
+            function fillFoundWordsTable(foundWords) {
+                var table = $("#word-found-list");
+                table.empty();
+                for (var i = 0; i < foundWords.length; i++) {
+                    var word = "<p>" + foundWords[i] + "</p>";
+                    table.append(word);
+                }
+            }
         });
     </script>
 </body>

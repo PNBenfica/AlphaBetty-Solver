@@ -1,4 +1,8 @@
-﻿.square
+﻿html{
+    overflow: hidden;
+}
+
+.square
 {
     background-color: #F0E3DA;
     text-align: center;
@@ -17,4 +21,15 @@
 
 .panel-heading, .panel-footer{
     background-color: #F2AB7C !important;
+}
+
+button{
+    background-color: #F2AB7C !important;
+    margin-bottom: 10px !important;
+}
+
+#word-found-list{
+  max-height:300px;
+  overflow-y:scroll;
+  width:100%;
 }
